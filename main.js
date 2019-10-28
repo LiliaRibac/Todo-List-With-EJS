@@ -17,6 +17,7 @@ app.use(express.static("public"));
 
 mongoose.connect('mongodb://localhost:27017/todolistDB', {
   useNewUrlParser: true
+  //  useUnifiedTopology: true 
 });
 
 const itemsSchema = {
@@ -39,60 +40,67 @@ const item3 = new Item({
 const defaultItems = [item1, item2, item3]
 
 
-Item.insertMany(defaultItems, function (err) {
-  if (err) {
-    console.log(err)
-  } else {
-    console.log("Successfully saved default items to DB.")
-  }
-})
 
 
 app.get("/", function (req, res) {
 
+      Item.find({}, function (err, foundItems) {
 
-  res.render("lists", {
-    listTitle: "Today",
-     newListItems: items
+        if (foundItems.length === 0) {
+          Item.insertMany(defaultItems, function (err) {
+            if (err) {
+              console.log(err)
+            } else {
+              console.log("Successfully saved default items to DB.")
+            }
+          });
+          res.redirect("/");
+        } else {
+          res.render("lists", {
+            listTitle: "Today",
+            newListItems: foundItems
 
-  })
-  // console.log(newListItems)
-})
+          })
 
-app.post("/", function (req, res) {
+        }
 
-  let item = req.body.newItem
+      })
+    })
 
-  if (req.body.lists === "Work") {
-    workItems.push(item)
-    res.redirect("/work")
-  } else {
-    items.push(item)
-    res.redirect("/")
-  }
-})
+      app.post("/", function (req, res) {
+
+        let item = req.body.newItem
+
+        if (req.body.lists === "Work") {
+          workItems.push(item)
+          res.redirect("/work")
+        } else {
+          items.push(item)
+          res.redirect("/")
+        }
+      })
 
 
 
 
-app.post("/work", function (req, res) {
+      app.post("/work", function (req, res) {
 
-  let item = req.body.newItem;
-  workItems.push(item);
-  res.redirect("/work")
-})
+        let item = req.body.newItem;
+        workItems.push(item);
+        res.redirect("/work")
+      })
 
-app.get("/work", function (req, res) {
-  res.render("lists", {
-    listTitle: "Work List",
-    newListItems: workItems
-  })
-})
+      app.get("/work", function (req, res) {
+        res.render("lists", {
+          listTitle: "Work List",
+          newListItems: workItems
+        })
+      })
 
-app.get("/about", function (req, res) {
-  res.render("about")
-})
+      app.get("/about", function (req, res) {
+        res.render("about")
+      })
 
-app.listen(3000, function () {
-  console.log("Server started on port 3000");
-})
+      app.listen(3000, function () {
+        console.log("Server started on port 3000");
+      })
