@@ -69,15 +69,16 @@ app.get("/", function (req, res) {
 
       app.post("/", function (req, res) {
 
-        let item = req.body.newItem
+        let itemName = req.body.newItem
 
-        if (req.body.lists === "Work") {
-          workItems.push(item)
-          res.redirect("/work")
-        } else {
-          items.push(item)
-          res.redirect("/")
-        }
+      
+        const item = new Item({
+          name: itemName
+        })
+
+        item.save();
+
+        res.redirect("/");
       })
 
 
