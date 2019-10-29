@@ -5,8 +5,8 @@ const mongoose = require("mongoose")
 
 const app = express();
 
-// const items = ["Buy Food", "Cook Food", "Eat Food"];
-// const workItems = [];
+const items = ["Buy Food", "Cook Food", "Eat Food"];
+const workItems = [];
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({
@@ -16,7 +16,7 @@ app.use(express.static("public"));
 
 mongoose.connect('mongodb://localhost:27017/todolistDB', {
   useNewUrlParser: true
- 
+
 });
 
 const itemsSchema = {
@@ -113,11 +113,13 @@ app.post("/", function (req, res) {
   if (listName === "Today") {
     item.save();
     res.redirect("/");
-  }else{
-    List.findOne({name:listName}, function(err, foundList){
+  } else {
+    List.findOne({
+      name: listName
+    }, function (err, foundList) {
       foundList.items.push(item);
       foundList.save();
-      res.redirect("/" +listName)
+      res.redirect("/" + listName)
     })
   }
 
@@ -126,13 +128,24 @@ app.post("/", function (req, res) {
 
 app.post("/delete", function (req, res) {
   const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName
 
-  Item.findByIdAndRemove(checkedItemId, function (err) {
-    if (!err) {
-      console.log("Successfully deleted checked item.");
-      res.redirect("/");
-    }
-  })
+  if (listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+      if (!err) {
+        console.log("Successfully deleted checked item.");
+        res.redirect("/");
+      }
+    })
+  }else{
+    List.findOneAndUpdate({name: listName},{$pull:{items:{_id:checkedItemId}}},function(err,foundList){
+      if(!err){
+        res.redirect("/" +listName)
+      }
+    })
+  }
+
+
 })
 
 
