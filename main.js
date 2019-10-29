@@ -16,7 +16,7 @@ app.use(express.static("public"));
 
 mongoose.connect('mongodb://localhost:27017/todolistDB', {
   useNewUrlParser: true
-  //  useUnifiedTopology: true 
+ 
 });
 
 const itemsSchema = {
@@ -104,13 +104,24 @@ app.get("/:customListName", function (req, res) {
 
 app.post("/", function (req, res) {
 
-  let itemName = req.body.newItem;
+  const itemName = req.body.newItem;
+  const listName = req.body.lists
+
   const item = new Item({
     name: itemName
-  })
+  });
+  if (listName === "Today") {
+    item.save();
+    res.redirect("/");
+  }else{
+    List.findOne({name:listName}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" +listName)
+    })
+  }
 
-  item.save();
-  res.redirect("/");
+
 })
 
 app.post("/delete", function (req, res) {
